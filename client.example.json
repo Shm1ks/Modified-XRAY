@@ -1,0 +1,75 @@
+{
+  "//": "ПРИМЕР конфига клиента. Замените значения-заглушки на свои.",
+  "//secrets": "ВАШ-IP-СЕРВЕРА, ВАШ-UUID, ВАШ-ПУБЛИЧНЫЙ-КЛЮЧ, ВАШ-SHORTID, ВАШ-ДОНОР.",
+  "//note": "ВАШ-ДОНОР и ключи ДОЛЖНЫ совпадать с сервером, иначе рукопожатие REALITY не пройдёт.",
+
+  "log": { "loglevel": "warning" },
+
+  "inbounds": [
+    {
+      "//": "SOCKS для эталонной связки Vision+REALITY (сравнение в замерах).",
+      "tag": "in-vision", "port": 10808, "listen": "127.0.0.1",
+      "protocol": "socks", "settings": { "udp": true }
+    },
+    {
+      "//": "SOCKS для packet-down — основной порт этого проекта.",
+      "tag": "in-xhttp", "port": 10809, "listen": "127.0.0.1",
+      "protocol": "socks", "settings": { "udp": true }
+    },
+    {
+      "//": "HTTP-прокси для системного прокси Windows (опционально).",
+      "tag": "in-http", "port": 10810, "listen": "127.0.0.1",
+      "protocol": "http"
+    }
+  ],
+
+  "outbounds": [
+    {
+      "tag": "out-vision",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [{
+          "address": "ВАШ-IP-СЕРВЕРА", "port": 443,
+          "users": [{ "id": "ВАШ-UUID", "encryption": "none", "flow": "xtls-rprx-vision" }]
+        }]
+      },
+      "streamSettings": {
+        "network": "tcp", "security": "reality",
+        "realitySettings": {
+          "serverName": "ВАШ-ДОНОР", "fingerprint": "chrome",
+          "publicKey": "ВАШ-ПУБЛИЧНЫЙ-КЛЮЧ", "shortId": "ВАШ-SHORTID"
+        }
+      }
+    },
+    {
+      "//": "Главный outbound: XHTTP в режиме packet-down.",
+      "tag": "out-xhttp",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [{
+          "address": "ВАШ-IP-СЕРВЕРА", "port": 8443,
+          "users": [{ "id": "ВАШ-UUID", "encryption": "none" }]
+        }]
+      },
+      "streamSettings": {
+        "network": "xhttp", "security": "reality",
+        "realitySettings": {
+          "serverName": "ВАШ-ДОНОР", "fingerprint": "chrome",
+          "publicKey": "ВАШ-ПУБЛИЧНЫЙ-КЛЮЧ", "shortId": "ВАШ-SHORTID"
+        },
+        "xhttpSettings": {
+          "path": "/api/v1/stream",
+          "mode": "packet-down"
+        }
+      }
+    }
+  ],
+
+  "routing": {
+    "rules": [
+      { "type": "field", "inboundTag": ["in-http"],   "outboundTag": "out-xhttp" },
+      { "type": "field", "inboundTag": ["in-vision"], "outboundTag": "out-vision" },
+      { "type": "field", "inboundTag": ["in-xhttp"],  "outboundTag": "out-xhttp" }
+    ]
+  }
+}

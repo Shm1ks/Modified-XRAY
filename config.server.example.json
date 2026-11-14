@@ -1,0 +1,63 @@
+{
+  "//": "ПРИМЕР конфига сервера. Замените значения-заглушки на свои.",
+  "//secrets": "ВАШ-UUID, ВАШ-ПРИВАТНЫЙ-КЛЮЧ, ВАШ-SHORTID, ВАШ-ДОНОР — подставить реальные.",
+
+  "log": { "loglevel": "warning" },
+
+  "dns": {
+    "//": "Чтобы сервер сам резолвил домены, не завися от системного resolver.",
+    "servers": ["1.1.1.1", "8.8.8.8"]
+  },
+
+  "inbounds": [
+    {
+      "//": "Эталонная связка Vision+REALITY на 443 — для сравнения в замерах.",
+      "tag": "vision-reality",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [{ "id": "ВАШ-UUID", "flow": "xtls-rprx-vision" }],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "target": "ВАШ-ДОНОР:443",
+          "serverNames": ["ВАШ-ДОНОР"],
+          "privateKey": "ВАШ-ПРИВАТНЫЙ-КЛЮЧ",
+          "shortIds": ["ВАШ-SHORTID"]
+        }
+      }
+    },
+    {
+      "//": "XHTTP на 8443. mode auto: режим выбирает клиент (в т.ч. packet-down).",
+      "tag": "xhttp-reality",
+      "port": 8443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [{ "id": "ВАШ-UUID" }],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "realitySettings": {
+          "target": "ВАШ-ДОНОР:443",
+          "serverNames": ["ВАШ-ДОНОР"],
+          "privateKey": "ВАШ-ПРИВАТНЫЙ-КЛЮЧ",
+          "shortIds": ["ВАШ-SHORTID"]
+        },
+        "xhttpSettings": {
+          "path": "/api/v1/stream",
+          "mode": "auto"
+        }
+      }
+    }
+  ],
+
+  "outbounds": [
+    { "tag": "direct", "protocol": "freedom" },
+    { "tag": "block", "protocol": "blackhole" }
+  ]
+}

@@ -1,0 +1,6 @@
+xray
+xray.exe
+client.json
+config.json
+*.log
+*.pcap
